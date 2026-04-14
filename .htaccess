@@ -1,0 +1,17 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/$1 [L]
+
+# Redirect root ke login
+RewriteRule ^$ index.php/auth/login [L]
+
+# Security
+Options -Indexes
+Options +FollowSymLinks
+
+# Protect files
+<FilesMatch "\.(htaccess|htpasswd|ini|log|sh|sql|bak|config)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
