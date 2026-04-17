@@ -9,8 +9,13 @@
                 <p class="text-muted mt-1">Rekap seluruh transaksi peminjaman buku yang telah dikembalikan</p>
             </div>
             <div>
-                <a href="<?= base_url('index.php/admin/export_excel?tanggal_awal='.($tanggal_awal??'').'&tanggal_akhir='.($tanggal_akhir??'').'&id_siswa='.($id_siswa??'').'&id_buku='.($id_buku??'')) ?>" class="btn btn-excel rounded-pill px-4">
-                    <i class="fas fa-file-excel me-2"></i> Export ke Excel
+                <a href="<?= base_url('index.php/admin/export_pdf?'.http_build_query([
+                    'tanggal_awal' => $this->input->get('tanggal_awal'),
+                    'tanggal_akhir' => $this->input->get('tanggal_akhir'),
+                    'id_siswa' => $this->input->get('id_siswa'),
+                    'id_buku' => $this->input->get('id_buku')
+                ])) ?>" class="btn btn-excel rounded-pill px-4">
+                    <i class="fas fa-file-pdf me-2"></i> Export PDF
                 </a>
             </div>
         </div>

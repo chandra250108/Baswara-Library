@@ -22,6 +22,28 @@
                 </div>
             </div>
         </div>
+
+        <!-- Notifikasi -->
+        <?php if(!empty($notifikasi)): ?>
+            <div class="alert alert-warning alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert" style="background: #f39c12; border: none; color: white;">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle p-2 me-3" style="background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-bell fa-2x"></i>
+                    </div>
+                    <div>
+                        <strong class="d-block">Pemberitahuan Pengembalian!</strong>
+                        <ul class="mb-0 mt-1">
+                            <?php foreach($notifikasi as $notif): ?>
+                                <li>Buku <strong>"<?= $notif->judul ?>"</strong> harus dikembalikan tanggal 
+                                    <strong><?= date('d/m/Y', strtotime($notif->batas_pengembalian)) ?></strong>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
         
         <!-- Statistik Cards -->
         <div class="row mb-4">
@@ -87,27 +109,37 @@
             </div>
         </div>
         
-        <!-- Notifikasi -->
-        <?php if(!empty($notifikasi)): ?>
-            <div class="alert alert-warning alert-dismissible fade show shadow-sm rounded-3 mb-4" role="alert" style="background: #f39c12; border: none; color: white;">
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle p-2 me-3" style="background: rgba(255,255,255,0.2);">
-                        <i class="fas fa-bell fa-2x"></i>
-                    </div>
+        <!-- Chart Section -->
+        <div class="card border-0 shadow-lg rounded-4 mb-4">
+            <div class="card-header text-white rounded-top-4" style="background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);">
+                <div class="d-flex justify-content-between align-items-center py-2 flex-wrap gap-2">
                     <div>
-                        <strong class="d-block">Pemberitahuan Pengembalian!</strong>
-                        <ul class="mb-0 mt-1">
-                            <?php foreach($notifikasi as $notif): ?>
-                                <li>Buku <strong>"<?= $notif->judul ?>"</strong> harus dikembalikan tanggal 
-                                    <strong><?= date('d/m/Y', strtotime($notif->batas_pengembalian)) ?></strong>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
+                        <i class="fas fa-chart-line me-2"></i>
+                        <strong>Grafik Statistik</strong>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap align-items-center">
+                        <select id="filterData" class="form-select form-select-sm rounded-pill" style="width: auto; background: rgba(255,255,255,0.2); color: white; border: none;">
+                            <option value="buku" style="color: #2C3E50;">📚 Buku</option>
+                            <option value="anggota" style="color: #2C3E50;">👥 Anggota</option>
+                            <option value="peminjaman" style="color: #2C3E50;">📖 Peminjaman</option>
+                        </select>
+                        <input type="date" id="startDate" class="form-control form-control-sm rounded-pill" style="width: 140px; background: rgba(255,255,255,0.2); color: white; border: none;">
+                        <span style="color: white;">s.d.</span>
+                        <input type="date" id="endDate" class="form-control form-control-sm rounded-pill" style="width: 140px; background: rgba(255,255,255,0.2); color: white; border: none;">
+                        <button id="applyFilterBtn" class="btn btn-sm rounded-pill px-3" style="background: #1ABC9C; color: white; border: none;">
+                            <i class="fas fa-filter me-1"></i> Filter
+                        </button>
+                        <button id="resetChartBtn" class="btn btn-sm rounded-pill px-3" style="background: #e74c3c; color: white; border: none;">
+                            <i class="fas fa-undo-alt me-1"></i> Reset
+                        </button>
                     </div>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                <small class="opacity-75">Visualisasi data berdasarkan rentang waktu yang dipilih</small>
             </div>
-        <?php endif; ?>
+            <div class="card-body p-3" style="background: #ECF0F1;">
+                <canvas id="statsChart" style="max-height: 400px; width: 100%;"></canvas>
+            </div>
+        </div>
         
         <!-- Peminjaman Aktif -->
         <div class="card border-0 shadow-lg rounded-4">
@@ -230,30 +262,135 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Fungsi untuk update jam real-time
-function updateRealTimeClock() {
-    var now = new Date();
-    var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    var months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+// Variabel chart global
+let chart;
+
+// Fungsi mengambil data dari server
+async function fetchChartData(filterData, startDate, endDate) {
+    const url = "<?= base_url('index.php/admin/getChartData') ?>";
+    const params = new URLSearchParams({
+        filterData: filterData,
+        startDate: startDate,
+        endDate: endDate
+    });
     
-    var dayName = days[now.getDay()];
-    var day = now.getDate();
-    var month = months[now.getMonth()];
-    var year = now.getFullYear();
-    var hours = now.getHours().toString().padStart(2, '0');
-    var minutes = now.getMinutes().toString().padStart(2, '0');
-    var seconds = now.getSeconds().toString().padStart(2, '0');
-    
-    document.getElementById('tanggalRealTime').innerHTML = dayName + ', ' + day + ' ' + month + ' ' + year;
-    document.getElementById('jamRealTime').innerHTML = hours + ':' + minutes + ':' + seconds;
+    try {
+        const response = await fetch(`${url}?${params}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        console.log('Data dari server:', data);
+        return data;
+    } catch (error) {
+        console.error('Gagal fetch data grafik:', error);
+        return { labels: [], data: [] };
+    }
 }
 
-// Jalankan pertama kali
-updateRealTimeClock();
+// Fungsi update chart
+async function updateChart() {
+    const filterData = document.getElementById('filterData').value;
+    let startDate = document.getElementById('startDate').value;
+    let endDate = document.getElementById('endDate').value;
+    
+    // Jika tanggal kosong, set default 30 hari terakhir
+    if (!startDate || !endDate) {
+        const end = new Date();
+        const start = new Date();
+        start.setDate(end.getDate() - 30);
+        startDate = start.toISOString().split('T')[0];
+        endDate = end.toISOString().split('T')[0];
+        document.getElementById('startDate').value = startDate;
+        document.getElementById('endDate').value = endDate;
+    }
+    
+    const canvas = document.getElementById('statsChart');
+    canvas.style.opacity = '0.5';
+    
+    try {
+        const result = await fetchChartData(filterData, startDate, endDate);
+        
+        let labelText = '';
+        switch(filterData) {
+            case 'buku': labelText = 'Jumlah Buku'; break;
+            case 'anggota': labelText = 'Jumlah Anggota'; break;
+            case 'peminjaman': labelText = 'Jumlah Peminjaman'; break;
+            default: labelText = 'Jumlah';
+        }
+        
+        const chartData = {
+            labels: result.labels && result.labels.length ? result.labels : ['Tidak ada data'],
+            datasets: [{
+                label: labelText,
+                data: result.data && result.data.length ? result.data : [0],
+                borderColor: '#1ABC9C',
+                backgroundColor: 'rgba(26, 188, 156, 0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: '#2C3E50',
+                pointBorderColor: '#fff',
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                tension: 0.3,
+                fill: true
+            }]
+        };
+        
+        if (chart) {
+            chart.data = chartData;
+            chart.update();
+        } else {
+            const ctx = canvas.getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { backgroundColor: '#2C3E50' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Jumlah' } },
+                        x: { title: { display: true, text: 'Tanggal' } }
+                    }
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error update chart:', error);
+    } finally {
+        canvas.style.opacity = '1';
+    }
+}
 
-// Update setiap detik
-setInterval(updateRealTimeClock, 1000);
+// Reset filter
+function resetFilters() {
+    document.getElementById('filterData').value = 'buku';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    updateChart(); // akan otomatis mengisi default tanggal
+}
+
+// Event listener
+document.getElementById('applyFilterBtn').addEventListener('click', updateChart);
+document.getElementById('resetChartBtn').addEventListener('click', resetFilters);
+
+// Jalankan saat halaman siap
+document.addEventListener('DOMContentLoaded', function() {
+    updateChart();
+    // Jam real-time (sesuaikan dengan kode Anda yang sudah ada)
+    function updateRealTimeClock() {
+        var now = new Date();
+        var days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        var months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        document.getElementById('tanggalRealTime').innerHTML = days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+        document.getElementById('jamRealTime').innerHTML = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ':' + now.getSeconds().toString().padStart(2,'0');
+    }
+    updateRealTimeClock();
+    setInterval(updateRealTimeClock, 1000);
+});
 </script>
 
 <style>
@@ -338,5 +475,14 @@ setInterval(updateRealTimeClock, 1000);
 }
 .btn-lihat-transaksi:active {
     transform: translateX(1px);
+}
+
+/* Chart custom */
+select.form-select-sm, input.form-control-sm {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+select.form-select-sm:hover, input.form-control-sm:hover {
+    background: rgba(255,255,255,0.3) !important;
 }
 </style>

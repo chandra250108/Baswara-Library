@@ -1,5 +1,11 @@
 <?php
-class Admin extends CI_Controller {
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+    // Import namespace Dompdf (diletakkan di luar class)
+    use Dompdf\Dompdf;
+    use Dompdf\Options;
+
+    class Admin extends CI_Controller {
     
     public function __construct() {
         parent::__construct();
@@ -872,66 +878,54 @@ public function refresh_transaksi_table() {
     $this->load->view('templates/footer');
 }
 
-    // Export ke Excel (CSV) - sesuai filter tanggal
-    public function export_excel() {
-    // Ambil semua parameter filter
-    $tanggal_awal = $this->input->get('tanggal_awal');
-    $tanggal_akhir = $this->input->get('tanggal_akhir');
-    $id_siswa = $this->input->get('id_siswa');
-    $id_buku = $this->input->get('id_buku');
-    
-    // Bangun query manual
-    $sql = "SELECT transaksi.*, buku.judul, buku.penulis, buku.penerbit, 
-                   users.nama_lengkap, users.kelas, users.alamat, users.no_hp 
-            FROM transaksi 
-            JOIN buku ON buku.id_buku = transaksi.id_buku 
-            JOIN users ON users.id = transaksi.id_siswa 
-            WHERE transaksi.status = 'dikembalikan'";
-    
-    // Tambahkan filter
-    if($id_siswa && $id_siswa != '') {
-        $sql .= " AND transaksi.id_siswa = " . $this->db->escape($id_siswa);
+    public function export_pdf() {
+        // Ambil parameter filter (sama seperti di laporan.php)
+        $tanggal_awal = $this->input->get('tanggal_awal');
+        $tanggal_akhir = $this->input->get('tanggal_akhir');
+        $id_siswa = $this->input->get('id_siswa');
+        $id_buku = $this->input->get('id_buku');
+        
+        // Query ambil data transaksi (sama seperti method laporan Anda)
+        $this->db->select('transaksi.*, buku.judul, buku.penulis, users.nama_lengkap, users.kelas');
+        $this->db->from('transaksi');
+        $this->db->join('buku', 'buku.id_buku = transaksi.id_buku');
+        $this->db->join('users', 'users.id = transaksi.id_siswa');
+        $this->db->where('transaksi.status', 'dikembalikan');
+        
+        if ($id_siswa) $this->db->where('transaksi.id_siswa', $id_siswa);
+        if ($id_buku) $this->db->where('transaksi.id_buku', $id_buku);
+        if ($tanggal_awal && $tanggal_akhir) {
+            $this->db->where('transaksi.tanggal_pinjam >=', $tanggal_awal);
+            $this->db->where('transaksi.tanggal_pinjam <=', $tanggal_akhir);
+        }
+        
+        $transaksi = $this->db->get()->result();
+        
+        // Siapkan data untuk view
+        $data = [
+            'transaksi' => $transaksi,
+            'tanggal_awal' => $tanggal_awal,
+            'tanggal_akhir' => $tanggal_akhir,
+            'filter_siswa' => $id_siswa ? $this->db->get_where('users', ['id' => $id_siswa])->row()->nama_lengkap : '',
+            'filter_buku' => $id_buku ? $this->db->get_where('buku', ['id_buku' => $id_buku])->row()->judul : ''
+        ];
+        
+        // Load view menjadi HTML
+        $html = $this->load->view('admin/laporan_cetak', $data, true);
+        
+        // Generate PDF menggunakan Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        
+        // Bersihkan output buffer
+        ob_clean();
+        
+        // Download PDF
+        $dompdf->stream("laporan_transaksi_" . date('Ymd_His') . ".pdf", ["Attachment" => 1]);
+        exit;
     }
-    
-    if($id_buku && $id_buku != '') {
-        $sql .= " AND transaksi.id_buku = " . $this->db->escape($id_buku);
-    }
-    
-    if($tanggal_awal && $tanggal_akhir) {
-        $sql .= " AND transaksi.tanggal_pinjam BETWEEN " . $this->db->escape($tanggal_awal) . " AND " . $this->db->escape($tanggal_akhir);
-    } elseif($tanggal_awal) {
-        $sql .= " AND transaksi.tanggal_pinjam >= " . $this->db->escape($tanggal_awal);
-    } elseif($tanggal_akhir) {
-        $sql .= " AND transaksi.tanggal_pinjam <= " . $this->db->escape($tanggal_akhir);
-    }
-    
-    $sql .= " ORDER BY transaksi.tanggal_pinjam DESC";
-    
-    $transaksi = $this->db->query($sql)->result();
-    
-    // Ambil nama filter
-    $filter_siswa = '';
-    if($id_siswa && $id_siswa != '') {
-        $siswa = $this->db->get_where('users', ['id' => $id_siswa])->row();
-        $filter_siswa = $siswa->nama_lengkap ?? '';
-    }
-    
-    $filter_buku = '';
-    if($id_buku && $id_buku != '') {
-        $buku = $this->db->get_where('buku', ['id_buku' => $id_buku])->row();
-        $filter_buku = $buku->judul ?? '';
-    }
-    
-    // Data untuk view
-    $data['transaksi'] = $transaksi;
-    $data['tanggal_awal'] = $tanggal_awal;
-    $data['tanggal_akhir'] = $tanggal_akhir;
-    $data['filter_siswa'] = $filter_siswa;
-    $data['filter_buku'] = $filter_buku;
-    
-    // Load view untuk export
-    $this->load->view('admin/laporan_cetak', $data);
-}
 
     // Edit transaksi dari laporan
     public function edit_transaksi_laporan($id) {
@@ -982,6 +976,79 @@ public function refresh_transaksi_table() {
             $this->session->set_flashdata('error', 'Gagal memperbarui transaksi!');
         }
         redirect('admin/laporan');
+    }
+
+    public function getChartData() {
+        header('Content-Type: application/json');
+        try {
+            $filterData = $this->input->get('filterData');
+            $startDate = $this->input->get('startDate');
+            $endDate = $this->input->get('endDate');
+            
+            if (!$startDate || !$endDate) {
+                $endDate = date('Y-m-d');
+                $startDate = date('Y-m-d', strtotime('-30 days'));
+            }
+            
+            $data = ['labels' => [], 'data' => []];
+            
+            switch($filterData) {
+                case 'buku':
+                    if (method_exists($this->Buku_model, 'getChartDataBuku')) {
+                        $data = $this->Buku_model->getChartDataBuku($startDate, $endDate);
+                    }
+                    break;
+                case 'anggota':
+                    if (method_exists($this->User_model, 'getChartDataAnggota')) {
+                        $data = $this->User_model->getChartDataAnggota($startDate, $endDate);
+                    }
+                    break;
+                case 'peminjaman':
+                    if (method_exists($this->Transaksi_model, 'getChartDataPeminjaman')) {
+                        $data = $this->Transaksi_model->getChartDataPeminjaman($startDate, $endDate);
+                    }
+                    break;
+                default:
+                    $data = ['labels' => [], 'data' => []];
+            }
+            
+            // Pastikan format selalu benar
+            if (!isset($data['labels']) || !is_array($data['labels'])) $data['labels'] = [];
+            if (!isset($data['data']) || !is_array($data['data'])) $data['data'] = [];
+            
+            echo json_encode($data);
+        } catch (Exception $e) {
+            echo json_encode(['labels' => [], 'data' => [], 'error' => $e->getMessage()]);
+        }
+    }
+
+    // Menampilkan preview kartu anggota (halaman detail)
+    public function detail_anggota($id) {
+        $anggota = $this->User_model->get_anggota_by_id($id);
+        if (!$anggota) show_404();
+        $data['anggota'] = $anggota;
+        $this->load->view('templates/header');
+        $this->load->view('templates/sidebar_admin');
+        $this->load->view('admin/detail_kartu_anggota', $data);
+        $this->load->view('templates/footer');
+    }
+
+    // Cetak kartu anggota sebagai PDF (satu kartu)
+    public function cetak_kartu_anggota($id) {
+        $anggota = $this->User_model->get_anggota_by_id($id);
+        if (!$anggota) show_404();
+
+        $data['anggota'] = $anggota;
+        $html = $this->load->view('admin/kartu_anggota_cetak', $data, true);
+
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        // Gunakan kertas A4 landscape agar kartu tidak terpotong
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        ob_clean();
+        $dompdf->stream("Kartu_Anggota_{$anggota->nama_lengkap}.pdf", ["Attachment" => 0]);
+        exit;
     }
 }
 ?>

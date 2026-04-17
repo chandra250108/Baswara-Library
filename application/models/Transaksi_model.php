@@ -117,5 +117,36 @@ class Transaksi_model extends CI_Model {
         
         return $this->db->get()->result();
     }
+
+    public function getChartDataPeminjaman($startDate, $endDate) {
+        $labels = [];
+        $data = [];
+        
+        $start = new DateTime($startDate);
+        $end = new DateTime($endDate);
+        $end->modify('+1 day');
+        $interval = new DateInterval('P1D');
+        $period = new DatePeriod($start, $interval, $end);
+        
+        $this->db->select('DATE(tanggal_pinjam) as tanggal, COUNT(*) as jumlah');
+        $this->db->from('transaksi');
+        $this->db->where('DATE(tanggal_pinjam) >=', $startDate);
+        $this->db->where('DATE(tanggal_pinjam) <=', $endDate);
+        $this->db->group_by('DATE(tanggal_pinjam)');
+        $query = $this->db->get();
+        $result = [];
+        foreach ($query->result() as $row) {
+            $result[$row->tanggal] = $row->jumlah;
+        }
+        
+        foreach ($period as $date) {
+            $dateString = $date->format('Y-m-d');
+            $formattedDate = $date->format('d M');
+            $labels[] = $formattedDate;
+            $data[] = isset($result[$dateString]) ? (int)$result[$dateString] : 0;
+        }
+        
+        return ['labels' => $labels, 'data' => $data];
+    }
 }
 ?>

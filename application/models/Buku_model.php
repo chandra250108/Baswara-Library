@@ -99,5 +99,38 @@ class Buku_model extends CI_Model {
         $this->db->order_by('deleted_at', 'DESC');
         return $this->db->get('buku')->result();
     }
+
+    public function getChartDataBuku($startDate, $endDate) {
+        $labels = [];
+        $data = [];
+        
+        // Generate semua tanggal dalam rentang
+        $start = new DateTime($startDate);
+        $end = new DateTime($endDate);
+        $end->modify('+1 day');
+        $interval = new DateInterval('P1D');
+        $period = new DatePeriod($start, $interval, $end);
+        
+        // Ambil data dari database sekaligus untuk efisiensi
+        $this->db->select('DATE(created_at) as tanggal, COUNT(*) as jumlah');
+        $this->db->from('buku');
+        $this->db->where('DATE(created_at) >=', $startDate);
+        $this->db->where('DATE(created_at) <=', $endDate);
+        $this->db->group_by('DATE(created_at)');
+        $query = $this->db->get();
+        $result = [];
+        foreach ($query->result() as $row) {
+            $result[$row->tanggal] = $row->jumlah;
+        }
+        
+        foreach ($period as $date) {
+            $dateString = $date->format('Y-m-d');
+            $formattedDate = $date->format('d M');
+            $labels[] = $formattedDate;
+            $data[] = isset($result[$dateString]) ? (int)$result[$dateString] : 0;
+        }
+        
+        return ['labels' => $labels, 'data' => $data];
+    }
 }
 ?>

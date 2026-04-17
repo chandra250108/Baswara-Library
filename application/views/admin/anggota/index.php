@@ -145,6 +145,9 @@
                                     </td>
                                     <td class="text-center align-middle">
                                         <div class="btn-group" role="group">
+                                             <a href="<?= base_url('index.php/admin/detail_anggota/'.$row->id) ?>" class="btn btn-info btn-sm rounded-pill me-2" title="Detail Kartu">
+                                                <i class="fas fa-id-card me-1"></i> Kartu
+                                            </a>
                                             <a href="<?= base_url('index.php/admin/edit_anggota/'.$row->id) ?>" class="btn btn-edit btn-sm rounded-pill me-2" title="Edit Anggota">
                                                 <i class="fas fa-edit me-1"></i> Edit
                                             </a>
@@ -216,6 +219,23 @@
 }
 .btn-cari:active {
     transform: translateY(0);
+}
+
+/* Tombol Detail - Info Blue */
+.btn-info {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50px;
+    padding: 5px 16px;
+    font-size: 13px;
+}
+.btn-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(14, 165, 233, 0.35);
+    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+    color: white;
 }
 
 /* Tombol Edit - Amber Gold */
