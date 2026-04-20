@@ -132,5 +132,12 @@ class Buku_model extends CI_Model {
         
         return ['labels' => $labels, 'data' => $data];
     }
+
+    public function get_buku_terbaru($limit = 4) {
+        $this->db->where('is_deleted', 0);
+        $this->db->order_by('id_buku', 'DESC');
+        $this->db->limit($limit);
+        return $this->db->get('buku')->result();
+    }
 }
 ?>

@@ -16,12 +16,10 @@
         body {
             background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             position: relative;
             overflow-x: hidden;
+            padding: 40px 0;
         }
         
         /* Background Pattern Overlay */
@@ -38,7 +36,7 @@
             pointer-events: none;
         }
         
-        /* Floating Books Animation */
+        /* Floating Books Decoration */
         .floating-books {
             position: absolute;
             width: 100%;
@@ -59,41 +57,124 @@
             50% { transform: translateY(-20px) rotate(5deg); }
         }
         
-        .card {
+        .main-container {
+            position: relative;
+            z-index: 10;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Katalog Buku (kiri) */
+        .books-section {
+            background: rgba(236, 240, 241, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            height: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            animation: slideUp 0.6s ease;
+        }
+        
+        .books-section h4 {
+            color: #2C3E50;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-left: 4px solid #1ABC9C;
+            padding-left: 15px;
+        }
+        
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .book-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: center;
+            padding: 12px;
+        }
+        
+        .book-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        /* Cover tidak terpotong */
+        .book-cover {
+            width: 100%;
+            height: 180px;
+            object-fit: contain;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        
+        .book-cover-placeholder {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #d5dbdb, #bdc3c7);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            color: white;
+            font-size: 48px;
+        }
+        
+        .book-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #2C3E50;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .book-author {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .book-stock {
+            font-size: 11px;
+            background: #e8f8f5;
+            color: #1ABC9C;
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin-top: 6px;
+        }
+        
+        /* Login Card (kanan) */
+        .login-card {
             border-radius: 20px;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
             overflow: hidden;
-            width: 100%;
-            max-width: 460px;
             background: #ECF0F1;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             animation: slideUp 0.6s ease;
-            position: relative;
-            z-index: 10;
-            margin: 0 auto;
+            height: 100%;
         }
         
-        .card:hover {
+        .login-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 30px 60px -12px rgba(0,0,0,0.4);
-        }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         
         .card-header {
             background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
             color: white;
             text-align: center;
-            padding: 35px 30px;
+            padding: 25px 20px;
             position: relative;
             overflow: hidden;
         }
@@ -115,8 +196,8 @@
         }
         
         .logo {
-            font-size: 55px;
-            margin-bottom: 15px;
+            font-size: 48px;
+            margin-bottom: 10px;
             color: #1ABC9C;
             animation: gentleBounce 3s infinite ease-in-out;
         }
@@ -129,18 +210,18 @@
         .card-header h3 {
             margin: 0;
             font-weight: 700;
-            font-size: 26px;
+            font-size: 24px;
             letter-spacing: 1px;
         }
         
         .card-header p {
-            margin-top: 10px;
+            margin-top: 8px;
             opacity: 0.85;
-            font-size: 13px;
+            font-size: 12px;
         }
         
         .card-body {
-            padding: 40px;
+            padding: 30px;
             background: #ECF0F1;
         }
         
@@ -160,7 +241,7 @@
         
         .form-control {
             border-left: none;
-            padding: 12px 15px;
+            padding: 10px 15px;
             font-size: 14px;
             transition: all 0.3s ease;
             background: white;
@@ -168,74 +249,36 @@
             color: #2C3E50;
         }
         
-        .form-control::placeholder {
-            color: #bdc3c7;
-            opacity: 0.8;
-        }
-        
         .form-control:focus {
-            box-shadow: none;
             border-color: #1ABC9C;
-            background: white;
+            box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.15);
         }
         
         .input-group:focus-within .input-group-text {
             border-color: #1ABC9C;
             color: #1ABC9C;
-            background: white;
         }
         
         .btn-login {
             background: linear-gradient(135deg, #1ABC9C 0%, #16A085 100%);
             border: none;
-            padding: 12px;
+            padding: 10px;
             font-weight: 600;
-            font-size: 15px;
+            font-size: 14px;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
             color: white;
-            letter-spacing: 1px;
         }
         
         .btn-login:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(26, 188, 156, 0.4);
-            background: linear-gradient(135deg, #16A085 0%, #1ABC9C 100%);
-        }
-        
-        .btn-login:active {
-            transform: translateY(0);
-        }
-        
-        .btn-login::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.25);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .btn-login:hover::before {
-            width: 300px;
-            height: 300px;
         }
         
         .register-link {
             text-align: center;
-            margin-top: 25px;
-            padding-top: 20px;
+            margin-top: 20px;
+            padding-top: 15px;
             border-top: 1px solid #d5dbdb;
-        }
-        
-        .register-link p {
-            margin-bottom: 0;
-            color: #7f8c8d;
             font-size: 13px;
         }
         
@@ -243,28 +286,17 @@
             color: #1ABC9C;
             text-decoration: none;
             font-weight: 600;
-            transition: all 0.3s ease;
         }
         
         .register-link a:hover {
-            color: #16A085;
             text-decoration: underline;
         }
         
-        /* Alert Styles */
         .alert {
             border-radius: 10px;
-            border: none;
-            padding: 12px 16px;
+            padding: 10px 15px;
             margin-bottom: 20px;
-            animation: shake 0.5s ease;
             font-size: 13px;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-4px); }
-            75% { transform: translateX(4px); }
         }
         
         .alert-danger {
@@ -279,75 +311,29 @@
             border-left: 4px solid #1ABC9C;
         }
         
-        /* Remember me checkbox */
-        .form-check {
-            margin-top: 15px;
-        }
-        
-        .form-check-label {
-            color: #7f8c8d;
-            font-size: 13px;
-        }
-        
-        .form-check-input {
-            background-color: white;
-            border-color: #d5dbdb;
-        }
-        
-        .form-check-input:checked {
-            background-color: #1ABC9C;
-            border-color: #1ABC9C;
-        }
-        
-        /* Footer */
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            color: rgba(255,255,255,0.6);
-            font-size: 11px;
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            max-width: 460px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .footer p {
-            margin-bottom: 0;
-        }
-        
         /* Responsive */
-        @media (max-width: 576px) {
-            .card {
-                margin: 20px;
-                max-width: calc(100% - 40px);
+        @media (max-width: 768px) {
+            .book-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
             }
-            
-            .card-header {
-                padding: 25px 20px;
+            .book-cover, .book-cover-placeholder {
+                height: 140px;
             }
-            
-            .logo {
-                font-size: 40px;
-            }
-            
-            .card-header h3 {
-                font-size: 22px;
-            }
-            
             .card-body {
-                padding: 30px 25px;
+                padding: 25px;
             }
         }
         
-        /* Input focus animation */
-        .form-control:focus {
-            border-color: #1ABC9C;
-            box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.15);
+        @media (max-width: 576px) {
+            .book-grid {
+                grid-template-columns: 1fr;
+            }
+            .books-section {
+                margin-bottom: 20px;
+            }
         }
         
-        /* Toggle password button */
         .btn-outline-secondary {
             border-color: #d5dbdb;
             color: #7f8c8d;
@@ -358,10 +344,20 @@
             border-color: #1ABC9C;
             color: white;
         }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Floating Books Decoration -->
     <div class="floating-books">
         <i class="fas fa-book-open book" style="top: 10%; left: 5%; font-size: 60px; animation-duration: 15s;"></i>
         <i class="fas fa-book book" style="top: 70%; left: 85%; font-size: 50px; animation-duration: 18s; animation-delay: 2s;"></i>
@@ -370,10 +366,48 @@
         <i class="fas fa-pen-fancy book" style="top: 40%; left: 92%; font-size: 40px; animation-duration: 22s; animation-delay: 3s;"></i>
     </div>
     
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-5">
-                <div class="card">
+    <div class="main-container">
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-7">
+                <div class="books-section">
+                    <h4><i class="fas fa-book-open me-2" style="color:#1ABC9C;"></i> Koleksi Buku Terbaru</h4>
+                    <div class="book-grid">
+                        <?php 
+                        // Tampilkan maksimal 4 buku
+                        $buku_display = isset($buku) ? array_slice($buku, 0, 4) : [];
+                        if(!empty($buku_display)): 
+                            foreach($buku_display as $bk): 
+                        ?>
+                            <div class="book-item">
+                                <?php if(!empty($bk->cover) && file_exists('uploads/'.$bk->cover)): ?>
+                                    <img src="<?= base_url('uploads/'.$bk->cover) ?>" class="book-cover" alt="<?= htmlspecialchars($bk->judul) ?>">
+                                <?php else: ?>
+                                    <div class="book-cover-placeholder">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="book-title"><?= htmlspecialchars($bk->judul) ?></div>
+                                <div class="book-author"><?= htmlspecialchars($bk->penulis) ?></div>
+                                <div class="book-stock">
+                                    <i class="fas fa-copy me-1"></i> Stok: <?= $bk->stok ?>
+                                </div>
+                            </div>
+                        <?php 
+                            endforeach; 
+                        else: 
+                        ?>
+                            <div class="text-center text-muted py-4 col-12">
+                                <i class="fas fa-inbox fa-3x mb-2"></i>
+                                <p>Belum ada buku tersedia</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kolom Kanan: Form Login -->
+            <div class="col-lg-5">
+                <div class="login-card">
                     <div class="card-header">
                         <div class="logo">
                             <i class="fas fa-book-open"></i>
@@ -444,19 +478,17 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="footer">
-                    <p>© <?= date('Y') ?> Baswara Library | Perpustakaan Digital</p>
-                </div>
             </div>
+        </div>
+        
+        <div class="footer text-center mt-4">
+            <p style="color: rgba(255,255,255,0.6); font-size: 11px;">© <?= date('Y') ?> Baswara Library | Perpustakaan Digital</p>
         </div>
     </div>
     
     <script>
-        // Toggle Password Visibility
         const togglePassword = document.querySelector('#togglePassword');
         const password = document.querySelector('#password');
-        
         if(togglePassword) {
             togglePassword.addEventListener('click', function() {
                 const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -465,15 +497,12 @@
             });
         }
         
-        // Remember Me functionality
         const rememberMe = document.querySelector('#rememberMe');
         const usernameInput = document.querySelector('#username');
-        
         if(localStorage.getItem('rememberedUsername')) {
             usernameInput.value = localStorage.getItem('rememberedUsername');
             if(rememberMe) rememberMe.checked = true;
         }
-        
         if(rememberMe) {
             rememberMe.addEventListener('change', function() {
                 if(this.checked) {
@@ -483,8 +512,6 @@
                 }
             });
         }
-        
-        // Auto save username when typing if remember me is checked
         if(usernameInput && rememberMe) {
             usernameInput.addEventListener('input', function() {
                 if(rememberMe.checked) {

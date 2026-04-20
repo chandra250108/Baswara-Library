@@ -1,7 +1,6 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-    // Import namespace Dompdf (diletakkan di luar class)
     use Dompdf\Dompdf;
     use Dompdf\Options;
 
@@ -278,7 +277,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         $this->db->where('transaksi.tanggal_pinjam <=', $tanggal_akhir);
     }
     
-    // ========== PERUBAHAN: Urutkan berdasarkan tanggal_pinjam TERBARU di atas ==========
     $this->db->order_by('transaksi.tanggal_pinjam', 'DESC');
     $this->db->order_by('transaksi.id_transaksi', 'DESC'); // tambahan untuk yang tanggal sama
     
@@ -1043,12 +1041,66 @@ public function refresh_transaksi_table() {
 
         $dompdf = new \Dompdf\Dompdf();
         $dompdf->loadHtml($html);
-        // Gunakan kertas A4 landscape agar kartu tidak terpotong
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
         ob_clean();
         $dompdf->stream("Kartu_Anggota_{$anggota->nama_lengkap}.pdf", ["Attachment" => 0]);
         exit;
+    }
+
+    public function profile() {
+        $id = $this->session->userdata('id');
+        $data['user'] = $this->User_model->get_user_by_id($id);
+        $this->load->view('templates/header');
+        $this->load->view('templates/sidebar_admin');
+        $this->load->view('admin/profile', $data);
+        $this->load->view('templates/footer');
+    }
+
+    public function update_profile() {
+        $id = $this->session->userdata('id');
+        $username = $this->input->post('username');
+        $nama = $this->input->post('nama_lengkap');
+        $no_hp = $this->input->post('no_hp');
+        $alamat = $this->input->post('alamat');
+        $password = $this->input->post('password');
+        
+        // Cek apakah username sudah digunakan oleh user lain (kecuali dirinya sendiri)
+        $this->db->where('username', $username);
+        $this->db->where('id !=', $id);
+        $cek = $this->db->get('users')->num_rows();
+        if($cek > 0) {
+            $this->session->set_flashdata('error', 'Username "' . $username . '" sudah digunakan oleh user lain!');
+            redirect('admin/profile');
+            return;
+        }
+        
+        $data = [
+            'username'     => $username,
+            'nama_lengkap' => $nama,
+            'no_hp'        => $no_hp,
+            'alamat'       => $alamat
+        ];
+        
+        if (!empty($password)) {
+            if (strlen($password) >= 6) {
+                $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+            } else {
+                $this->session->set_flashdata('error', 'Password minimal 6 karakter!');
+                redirect('admin/profile');
+                return;
+            }
+        }
+        
+        if ($this->User_model->update_user($id, $data)) {
+            // Update session jika username atau nama berubah
+            $this->session->set_userdata('username', $username);
+            $this->session->set_userdata('nama', $nama);
+            $this->session->set_flashdata('success', 'Profil berhasil diperbarui!');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal memperbarui profil!');
+        }
+        redirect('admin/profile');
     }
 }
 ?>

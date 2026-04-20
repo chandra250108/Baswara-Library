@@ -6,7 +6,7 @@ class Siswa extends CI_Controller {
         if(!$this->session->userdata('logged_in') || $this->session->userdata('role') != 'siswa') {
             redirect('auth/login');
         }
-        $this->load->model(['Buku_model', 'Transaksi_model']);
+        $this->load->model(['Buku_model', 'Transaksi_model', 'User_model']);
     }
     
     public function dashboard() {
@@ -96,6 +96,63 @@ class Siswa extends CI_Controller {
         $this->load->view('templates/sidebar_siswa');
         $this->load->view('siswa/buku', $data);
         $this->load->view('templates/footer');
+    }
+
+    public function profile() {
+        $id = $this->session->userdata('id');
+        $data['user'] = $this->User_model->get_user_by_id($id);
+        $this->load->view('templates/header');
+        $this->load->view('templates/sidebar_siswa');
+        $this->load->view('siswa/profile', $data);
+        $this->load->view('templates/footer');
+    }
+
+    public function update_profile() {
+        $id = $this->session->userdata('id');
+        $username = $this->input->post('username');
+        $nama = $this->input->post('nama_lengkap');
+        $kelas = $this->input->post('kelas');
+        $no_hp = $this->input->post('no_hp');
+        $alamat = $this->input->post('alamat');
+        $password = $this->input->post('password');
+        
+        // Cek apakah username sudah digunakan oleh user lain (selain dirinya)
+        $this->db->where('username', $username);
+        $this->db->where('id !=', $id);
+        $cek = $this->db->get('users')->num_rows();
+        if($cek > 0) {
+            $this->session->set_flashdata('error', 'Username sudah digunakan oleh siswa lain!');
+            redirect('siswa/profile');
+            return;
+        }
+        
+        $data = [
+            'username'     => $username,
+            'nama_lengkap' => $nama,
+            'kelas'        => $kelas,
+            'no_hp'        => $no_hp,
+            'alamat'       => $alamat
+        ];
+        
+        if (!empty($password)) {
+            if (strlen($password) >= 6) {
+                $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+            } else {
+                $this->session->set_flashdata('error', 'Password minimal 6 karakter!');
+                redirect('siswa/profile');
+                return;
+            }
+        }
+        
+        if ($this->User_model->update_user($id, $data)) {
+            // Update session jika username atau nama berubah
+            $this->session->set_userdata('username', $username);
+            $this->session->set_userdata('nama', $nama);
+            $this->session->set_flashdata('success', 'Profil berhasil diperbarui!');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal memperbarui profil!');
+        }
+        redirect('siswa/profile');
     }
 }
 ?>

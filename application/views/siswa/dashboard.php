@@ -455,7 +455,6 @@
 </div>
 
 <script>
-// Fungsi untuk update jam real-time
 function updateRealTimeClock() {
     var now = new Date();
     var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];

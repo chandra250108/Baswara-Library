@@ -173,6 +173,69 @@
             cursor: pointer;
             background-color: white;
         }
+
+        @media (max-width: 768px) {
+            /* Sidebar menjadi full width dan muncul di atas konten */
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                margin-bottom: 20px;
+                border-right: none;
+                border-bottom: 1px solid rgba(26, 188, 156, 0.2);
+                padding-top: 10px;
+            }
+            /* Konten utama menjadi full width */
+            .col-md-10 {
+                width: 100%;
+                flex: 0 0 auto;
+            }
+            /* Atur ulang margin/padding row */
+            .row {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            /* Navbar brand dan user info lebih kecil */
+            .navbar-brand {
+                font-size: 1rem;
+            }
+            .navbar .ms-auto span {
+                font-size: 0.8rem;
+            }
+            /* Card body padding lebih kecil */
+            .card-body {
+                padding: 1rem !important;
+            }
+            /* Tabel dibungkus scroll otomatis (pastikan di view sudah ada class table-responsive) */
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            /* Atur ulang grid untuk kartu statistik */
+            .stat-card .card-body {
+                padding: 0.75rem;
+            }
+            .stat-card h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Untuk layar sangat kecil (<= 576px) */
+        @media (max-width: 576px) {
+            .sidebar .nav-link {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            .btn {
+                font-size: 0.85rem;
+                padding: 6px 12px;
+            }
+            .form-control, .select2-selection {
+                font-size: 14px;
+            }
+            footer p {
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>

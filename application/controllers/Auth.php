@@ -21,8 +21,11 @@ class Auth extends CI_Controller {
                 redirect('siswa/dashboard');
             }
         }
-        
-        $this->load->view('auth/login');
+
+        $this->load->model('Buku_model');
+         $data['buku'] = $this->Buku_model->get_buku_terbaru(4);
+
+        $this->load->view('auth/login', $data);
     }
     
     public function proses_login() {

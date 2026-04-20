@@ -15,9 +15,6 @@ class User_model extends CI_Model {
             if (password_verify($password, $user->password)) {
                 return $user;
             }
-            else if (md5($password) === $user->password) {
-                return $user;
-            }
         }
         return false;
     }
@@ -133,6 +130,16 @@ class User_model extends CI_Model {
         $this->db->where('role', 'siswa');
         $query = $this->db->get('users');
         return $query->row();
+    }
+
+    public function get_user_by_id($id) {
+        $this->db->where('id', $id);
+        return $this->db->get('users')->row();
+    }
+
+    public function update_user($id, $data) {
+        $this->db->where('id', $id);
+        return $this->db->update('users', $data);
     }
 }
 ?>
